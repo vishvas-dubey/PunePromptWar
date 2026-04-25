@@ -77,29 +77,37 @@ router.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
     const chunks = chunkText(fullText);
     vectorStore = []; // Reset store for new document
 
-    // We process the first 5 chunks to avoid API rate limits during the hackathon
+    // We process the first 5 chunks to avoid API rate limits
     const chunksToProcess = chunks.slice(0, 5);
 
     for (let i = 0; i < chunksToProcess.length; i++) {
-      const chunk = chunksToProcess[i];
-      const result = await embeddingModel.embedContent(chunk);
-      const embedding = result.embedding.values;
-      vectorStore.push({ id: i, text: chunk, vector: embedding });
+      try {
+        const chunk = chunksToProcess[i];
+        const result = await embeddingModel.embedContent(chunk);
+        const embedding = result.embedding.values;
+        vectorStore.push({ id: i, text: chunk, vector: embedding });
+      } catch (err) {
+        console.error(`Error embedding chunk ${i}:`, err);
+      }
+    }
+
+    if (vectorStore.length === 0) {
+      throw new Error("Failed to generate any embeddings. Check API key/quota.");
     }
 
     console.log(`Successfully stored ${vectorStore.length} vector embeddings.`);
 
-    // 4. Generate a Quiz based on the document using Gemini Chat Model
+    // 4. Generate a Quiz based on the document
     const chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const quizPrompt = `Based on the following text extracted from a PDF, generate a 3-question multiple-choice quiz. Format it nicely in markdown.\n\nText Context:\n${chunksToProcess.join('\n')}`;
+    const quizPrompt = `Based on the following text, generate a 3-question multiple-choice quiz in Markdown:\n\n${chunksToProcess.join('\n')}`;
     
     const quizResult = await chatModel.generateContent(quizPrompt);
     const quizResponse = quizResult.response.text();
 
     res.json({ 
       success: true, 
-      message: "PDF processed, embedded, and stored in Vector DB.",
-      quiz: quizResponse 
+      quiz: quizResponse,
+      message: "PDF processed and RAG indexed."
     });
 
   } catch (error) {

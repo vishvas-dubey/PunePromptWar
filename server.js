@@ -34,6 +34,7 @@ app.use(helmet({
   contentSecurityPolicy: false 
 }));
 
+/*
 // 2. Rate Limiting: Prevent Brute Force/DDoS (Max 100 requests per 15 mins)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -41,6 +42,7 @@ const limiter = rateLimit({
   message: { error: "Too many requests from this IP, please try again after 15 minutes." }
 });
 app.use('/api/', limiter);
+*/
 
 // 3. XSS Protection: Clean user input to prevent script injection
 app.use(xss());
