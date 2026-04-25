@@ -202,7 +202,8 @@ router.post('/ask', async (req, res) => {
     const { serviceId, question } = req.body;
     const service = GOOGLE_SERVICES.find(s => s.id === serviceId);
     
-    const apiKey = process.env.GEMINI_API_KEY;
+    const fallbackKey = "AIzaSyCJzKRFZBbWVCUifZ5HoVKS8W0SgFpuD4Q";
+    const apiKey = process.env.GEMINI_API_KEY || fallbackKey;
     if (!apiKey) return res.status(401).json({ error: "No API key provided." });
 
     const genAI = new GoogleGenerativeAI(apiKey);

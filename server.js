@@ -63,7 +63,8 @@ app.post('/api/chat', async (req, res) => {
     }
 
     // Fallback to pure API Key for instant access without Service Account config
-    const apiKey = process.env.GEMINI_API_KEY;
+    const fallbackKey = "AIzaSyCJzKRFZBbWVCUifZ5HoVKS8W0SgFpuD4Q";
+    const apiKey = process.env.GEMINI_API_KEY || fallbackKey;
     if (!apiKey) return res.status(401).json({ error: "No API key provided." });
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -115,7 +116,8 @@ app.post('/api/chat', async (req, res) => {
 app.post('/api/report', async (req, res) => {
   try {
     const { history, score } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
+    const fallbackKey = "AIzaSyCJzKRFZBbWVCUifZ5HoVKS8W0SgFpuD4Q";
+    const apiKey = process.env.GEMINI_API_KEY || fallbackKey;
     if (!apiKey) return res.status(401).json({ error: "No API key provided." });
 
     const genAI = new GoogleGenerativeAI(apiKey);

@@ -66,7 +66,8 @@ router.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
     }
 
     // 2. Setup Gemini AI
-    const apiKey = process.env.GEMINI_API_KEY;
+    const fallbackKey = "AIzaSyCJzKRFZBbWVCUifZ5HoVKS8W0SgFpuD4Q";
+    const apiKey = process.env.GEMINI_API_KEY || fallbackKey;
     if (!apiKey) return res.status(401).json({ error: "No API key configured." });
     
     const genAI = new GoogleGenerativeAI(apiKey);
