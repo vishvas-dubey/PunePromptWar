@@ -1,0 +1,14 @@
+{
+  "name": "punepromptwar-earning-assistant",
+  "version": "1.0.0",
+  "description": "AI Financial Assistant for Pune Prompt War",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0"
+  }
+}

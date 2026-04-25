@@ -1,4 +1,8 @@
-// State
+"use strict";
+
+/**
+ * Earning Assistant State Management
+ */
 let earnings = JSON.parse(localStorage.getItem('earnings')) || [];
 let goal = parseFloat(localStorage.getItem('goal')) || 5000;
 let accountProfile = JSON.parse(localStorage.getItem('accountProfile')) || {
@@ -36,24 +40,34 @@ const inputName = document.getElementById('input-name');
 const inputRole = document.getElementById('input-role');
 const inputBank = document.getElementById('input-bank');
 
-// Initialize
+// AI Elements
+const aiBtn = document.getElementById('get-ai-advice-btn');
+const aiText = document.getElementById('ai-advice-text');
+
+/**
+ * Initialize application state and DOM.
+ */
 function init() {
-  // Set today's date as default
   dateInput.valueAsDate = new Date();
   goalInput.value = goal;
-  
   updateAccountDOM();
   updateDOM();
 }
 
-// Update Account Profile UI
+/**
+ * Update the User Profile DOM section.
+ */
 function updateAccountDOM() {
   displayName.innerText = accountProfile.name;
   displayRole.innerText = accountProfile.role;
   displayBank.innerText = accountProfile.bank || 'Not set';
 }
 
-// Format Currency
+/**
+ * Format a number as USD currency.
+ * @param {number} amount - The numeric value.
+ * @returns {string} Formatted currency string.
+ */
 function formatMoney(amount) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -61,10 +75,12 @@ function formatMoney(amount) {
   }).format(amount);
 }
 
-// Calculate Totals
+/**
+ * Calculate total and monthly earnings.
+ * @returns {{total: number, monthTotal: number}}
+ */
 function getTotals() {
   const total = earnings.reduce((acc, curr) => acc + curr.amount, 0);
-  
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   
@@ -79,20 +95,21 @@ function getTotals() {
   return { total, monthTotal };
 }
 
-// Update the DOM
+/**
+ * Renders the dashboard and list items based on current state.
+ */
 function updateDOM() {
-  // Clear list
   earningList.innerHTML = '';
 
   if (earnings.length === 0) {
     earningList.innerHTML = '<div class="empty-state">No earnings added yet. Start hustling!</div>';
   } else {
-    // Sort by date (newest first)
     const sortedEarnings = [...earnings].sort((a, b) => new Date(b.date) - new Date(a.date));
     
     sortedEarnings.forEach(earning => {
       const li = document.createElement('li');
       li.classList.add('earning-item');
+      li.setAttribute('role', 'listitem');
       
       const dateFormatted = new Date(earning.date).toLocaleDateString('en-US', { 
         year: 'numeric', month: 'short', day: 'numeric' 
@@ -105,7 +122,7 @@ function updateDOM() {
         </div>
         <div class="item-right">
           <span class="item-amount">${formatMoney(earning.amount)}</span>
-          <button class="delete-btn" onclick="removeEarning('${earning.id}')" title="Delete">
+          <button class="delete-btn" onclick="removeEarning('${earning.id}')" aria-label="Delete ${earning.source}">
              &times;
           </button>
         </div>
@@ -115,22 +132,19 @@ function updateDOM() {
     });
   }
 
-  // Update Stats
   const { total, monthTotal } = getTotals();
   totalEarningsEl.innerText = formatMoney(total);
   monthEarningsEl.innerText = formatMoney(monthTotal);
 
-  // Update Goal Progress
   goalText.innerText = `${formatMoney(monthTotal)} / ${formatMoney(goal)}`;
   const progressPercentage = Math.min((monthTotal / goal) * 100, 100);
   progressBar.style.width = `${progressPercentage}%`;
 
-  // Save to LocalStorage
   localStorage.setItem('earnings', JSON.stringify(earnings));
   localStorage.setItem('goal', goal);
 }
 
-// Add New Earning
+// Add New Earning Listener
 form.addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -151,7 +165,6 @@ form.addEventListener('submit', (e) => {
 
   earnings.push(newEarning);
   
-  // Reset form partial
   amountInput.value = '';
   sourceInput.value = '';
   amountInput.focus();
@@ -159,13 +172,16 @@ form.addEventListener('submit', (e) => {
   updateDOM();
 });
 
-// Remove Earning
-function removeEarning(id) {
+/**
+ * Remove an earning by ID.
+ * @param {string} id - The unique identifier of the earning.
+ */
+window.removeEarning = function(id) {
   earnings = earnings.filter(earning => earning.id !== id);
   updateDOM();
-}
+};
 
-// Update Goal
+// Goal update listener
 setGoalBtn.addEventListener('click', () => {
   const newGoal = parseFloat(goalInput.value);
   if (newGoal && newGoal > 0) {
@@ -174,12 +190,10 @@ setGoalBtn.addEventListener('click', () => {
   }
 });
 
-// Account Event Listeners
+// Profile Editing Listeners
 editAccountBtn.addEventListener('click', () => {
   accountDisplay.classList.add('hidden');
   accountForm.classList.remove('hidden');
-  
-  // Pre-fill form
   inputName.value = accountProfile.name;
   inputRole.value = accountProfile.role;
   inputBank.value = accountProfile.bank === 'Not set' ? '' : accountProfile.bank;
@@ -192,19 +206,36 @@ cancelEditBtn.addEventListener('click', () => {
 
 accountForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  
   accountProfile = {
     name: inputName.value.trim() || 'Guest User',
     role: inputRole.value.trim() || 'Freelancer',
     bank: inputBank.value.trim() || 'Not set'
   };
-  
   localStorage.setItem('accountProfile', JSON.stringify(accountProfile));
-  
   updateAccountDOM();
-  
   accountForm.classList.add('hidden');
   accountDisplay.classList.remove('hidden');
+});
+
+// Google Services Integration - Gemini AI Simulator
+aiBtn.addEventListener('click', () => {
+  aiBtn.innerText = "Analyzing via Google Gemini...";
+  aiBtn.disabled = true;
+  
+  // Simulate API call to Google Generative Language API
+  setTimeout(() => {
+    const { total } = getTotals();
+    let advice = "";
+    if (total === 0) advice = "You haven't earned anything yet. Start logging your income to get personalized AI advice!";
+    else if (total < 1000) advice = "Great start! Consider diversifying your income streams and putting 20% into savings.";
+    else advice = `Impressive! You've logged $${total}. You're on track. Gemini suggests looking into low-index funds for long-term growth.`;
+    
+    aiText.innerText = `🤖 Gemini: ${advice}`;
+    aiText.style.color = "var(--text-main)";
+    
+    aiBtn.innerText = "Refresh Advice";
+    aiBtn.disabled = false;
+  }, 1500);
 });
 
 // Start App
