@@ -12,10 +12,14 @@ const modeSwitch = document.getElementById('mode-switch');
 const modeLabel = document.getElementById('mode-label');
 const progressBar = document.getElementById('main-progress');
 const apiKeyBtn = document.getElementById('api-key-btn');
+const micBtn = document.getElementById('mic-btn');
+const readAloudBtn = document.getElementById('read-aloud-btn');
+const confusedBtn = document.getElementById('confused-btn');
 
 // --- API & Chat State ---
 let apiKey = localStorage.getItem('gemini_api_key') || '';
 let chatHistory = [];
+let autoReadAloud = false;
 // --- Initialization ---
 function init() {
   if (!apiKey) {
@@ -84,6 +88,11 @@ chatForm.addEventListener('submit', async (e) => {
     }
     
     renderMessage({ sender: "ai", content: aiResponse, gamification });
+
+    // Text to Speech
+    if (autoReadAloud) {
+      speakText(aiResponse.replace(/\*/g, '')); // Strip markdown asterisks for speech
+    }
   } catch (error) {
     document.getElementById(typingMsgId).remove();
     renderMessage({ sender: "ai", content: "Error connecting to AI. Please check your API key." });
@@ -152,10 +161,59 @@ apiKeyBtn.addEventListener('click', () => {
 });
 
 // Event listener for "I don't get it" helper button
-document.querySelector('.context-actions button:nth-child(2)').addEventListener('click', () => {
+confusedBtn.addEventListener('click', () => {
   chatInput.value = "I don't get it, can you explain simpler?";
   chatForm.dispatchEvent(new Event('submit'));
 });
+
+// --- Speech Recognition & Synthesis ---
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.lang = 'en-US';
+
+  micBtn.addEventListener('click', () => {
+    recognition.start();
+    micBtn.innerHTML = '🔴';
+    chatInput.placeholder = "Listening...";
+  });
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    chatInput.value = transcript;
+    micBtn.innerHTML = '🎤';
+    chatInput.placeholder = "Type your answer or click mic...";
+    chatForm.dispatchEvent(new Event('submit')); // Auto submit
+  };
+
+  recognition.onerror = () => {
+    micBtn.innerHTML = '🎤';
+    chatInput.placeholder = "Type your answer or click mic...";
+  };
+  recognition.onend = () => {
+    micBtn.innerHTML = '🎤';
+    chatInput.placeholder = "Type your answer or click mic...";
+  };
+} else {
+  micBtn.style.display = 'none'; // Hide if browser doesn't support
+}
+
+readAloudBtn.addEventListener('click', () => {
+  autoReadAloud = !autoReadAloud;
+  readAloudBtn.innerText = autoReadAloud ? "🔊 Mute AI" : "🔊 Read Aloud";
+  if (!autoReadAloud) window.speechSynthesis.cancel();
+});
+
+function speakText(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel(); // Stop current speaking
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'en-US';
+    msg.rate = 1.0;
+    window.speechSynthesis.speak(msg);
+  }
+}
 
 // Start App
 init();
