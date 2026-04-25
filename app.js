@@ -1,11 +1,12 @@
 "use strict";
 
 /**
- * Earning Assistant State Management
+ * AI Learning Assistant State Management
  */
-let earnings = JSON.parse(localStorage.getItem('earnings')) || [];
-let goal = parseFloat(localStorage.getItem('goal')) || 10;
-let accountProfile = JSON.parse(localStorage.getItem('accountProfile')) || {
+// Use new localstorage keys to avoid clashes with the old "Earning Assistant"
+let topics = JSON.parse(localStorage.getItem('learning_topics')) || [];
+let goal = parseFloat(localStorage.getItem('learning_goal')) || 10;
+let accountProfile = JSON.parse(localStorage.getItem('learner_profile')) || {
   name: 'Learner',
   role: 'Student',
   bank: 'Beginner'
@@ -27,7 +28,6 @@ const setGoalBtn = document.getElementById('set-goal-btn');
 const goalText = document.getElementById('goal-text');
 const progressBar = document.getElementById('progress-bar');
 
-// Account DOM Elements
 const accountDisplay = document.getElementById('account-display');
 const accountForm = document.getElementById('account-form');
 const displayName = document.getElementById('display-name');
@@ -40,9 +40,15 @@ const inputName = document.getElementById('input-name');
 const inputRole = document.getElementById('input-role');
 const inputBank = document.getElementById('input-bank');
 
-// AI Elements
 const aiBtn = document.getElementById('get-ai-advice-btn');
 const aiText = document.getElementById('ai-advice-text');
+
+// Chatbot DOM
+const chatContainer = document.getElementById('chatbot-container');
+const chatHeader = document.getElementById('chatbot-header');
+const chatMessages = document.getElementById('chatbot-messages');
+const chatForm = document.getElementById('chatbot-form');
+const chatInput = document.getElementById('chatbot-input-field');
 
 /**
  * Initialize application state and DOM.
@@ -60,91 +66,67 @@ function init() {
 function updateAccountDOM() {
   displayName.innerText = accountProfile.name;
   displayRole.innerText = accountProfile.role;
-  displayBank.innerText = accountProfile.bank || 'Not set';
+  displayBank.innerText = accountProfile.bank || 'Beginner';
 }
 
-/**
- * Format a number as hours.
- * @param {number} amount - The numeric value.
- * @returns {string} Formatted hours string.
- */
 function formatHours(amount) {
   return amount + 'h';
 }
 
-/**
- * Calculate total and monthly earnings.
- * @returns {{total: number, monthTotal: number}}
- */
 function getTotals() {
-  const total = earnings.reduce((acc, curr) => acc + curr.amount, 0);
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
+  const total = topics.reduce((acc, curr) => acc + curr.amount, 0);
+  const count = topics.length;
   
-  const monthTotal = earnings.reduce((acc, curr) => {
-    const d = new Date(curr.date);
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-      return acc + curr.amount;
-    }
-    return acc;
-  }, 0);
-
-  return { total, monthTotal };
+  return { total, count };
 }
 
-/**
- * Renders the dashboard and list items based on current state.
- */
 function updateDOM() {
   earningList.innerHTML = '';
 
-  if (earnings.length === 0) {
-    earningList.innerHTML = '<div class="empty-state">No earnings added yet. Start hustling!</div>';
+  if (topics.length === 0) {
+    earningList.innerHTML = '<div class="empty-state">No concepts added yet. Start learning!</div>';
   } else {
-    const sortedEarnings = [...earnings].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedTopics = [...topics].sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    sortedEarnings.forEach(earning => {
+    sortedTopics.forEach(topic => {
       const li = document.createElement('li');
       li.classList.add('earning-item');
       li.setAttribute('role', 'listitem');
       
-      const dateFormatted = new Date(earning.date).toLocaleDateString('en-US', { 
+      const dateFormatted = new Date(topic.date).toLocaleDateString('en-US', { 
         year: 'numeric', month: 'short', day: 'numeric' 
       });
 
       li.innerHTML = `
         <div class="item-info">
-          <span class="item-title">${earning.source}</span>
-          <span class="item-date">${dateFormatted} &bull; ${earning.category}</span>
+          <span class="item-title">${topic.source}</span>
+          <span class="item-date">${dateFormatted} &bull; ${topic.category}</span>
         </div>
         <div class="item-right">
-          <span class="item-amount">${formatHours(earning.amount)}</span>
-          <button class="delete-btn" onclick="removeEarning('${earning.id}')" aria-label="Delete ${earning.source}">
+          <span class="item-amount">${formatHours(topic.amount)}</span>
+          <button class="delete-btn" onclick="removeTopic('${topic.id}')" aria-label="Delete ${topic.source}">
              &times;
           </button>
         </div>
       `;
-      
       earningList.appendChild(li);
     });
   }
 
-  const { total, monthTotal } = getTotals();
+  const { total, count } = getTotals();
   totalEarningsEl.innerText = formatHours(total);
-  monthEarningsEl.innerText = formatHours(monthTotal);
+  monthEarningsEl.innerText = count.toString(); // Display count instead of month total
 
-  goalText.innerText = `${formatHours(monthTotal)} / ${formatHours(goal)}`;
-  const progressPercentage = Math.min((monthTotal / goal) * 100, 100);
+  goalText.innerText = `${formatHours(total)} / ${formatHours(goal)}`;
+  const progressPercentage = Math.min((total / goal) * 100, 100);
   progressBar.style.width = `${progressPercentage}%`;
 
-  localStorage.setItem('earnings', JSON.stringify(earnings));
-  localStorage.setItem('goal', goal);
+  localStorage.setItem('learning_topics', JSON.stringify(topics));
+  localStorage.setItem('learning_goal', goal);
 }
 
-// Add New Earning Listener
 form.addEventListener('submit', (e) => {
   e.preventDefault();
-
   const amount = parseFloat(amountInput.value);
   const source = sourceInput.value.trim();
   const date = dateInput.value;
@@ -152,7 +134,7 @@ form.addEventListener('submit', (e) => {
 
   if (!amount || !source || !date) return;
 
-  const newEarning = {
+  const newTopic = {
     id: crypto.randomUUID(),
     amount,
     source,
@@ -160,25 +142,18 @@ form.addEventListener('submit', (e) => {
     category
   };
 
-  earnings.push(newEarning);
-  
+  topics.push(newTopic);
   amountInput.value = '';
   sourceInput.value = '';
   amountInput.focus();
-
   updateDOM();
 });
 
-/**
- * Remove an earning by ID.
- * @param {string} id - The unique identifier of the earning.
- */
-window.removeEarning = function(id) {
-  earnings = earnings.filter(earning => earning.id !== id);
+window.removeTopic = function(id) {
+  topics = topics.filter(t => t.id !== id);
   updateDOM();
 };
 
-// Goal update listener
 setGoalBtn.addEventListener('click', () => {
   const newGoal = parseFloat(goalInput.value);
   if (newGoal && newGoal > 0) {
@@ -187,7 +162,6 @@ setGoalBtn.addEventListener('click', () => {
   }
 });
 
-// Profile Editing Listeners
 editAccountBtn.addEventListener('click', () => {
   accountDisplay.classList.add('hidden');
   accountForm.classList.remove('hidden');
@@ -208,24 +182,23 @@ accountForm.addEventListener('submit', (e) => {
     role: inputRole.value.trim() || 'Student',
     bank: inputBank.value.trim() || 'Beginner'
   };
-  localStorage.setItem('accountProfile', JSON.stringify(accountProfile));
+  localStorage.setItem('learner_profile', JSON.stringify(accountProfile));
   updateAccountDOM();
   accountForm.classList.add('hidden');
   accountDisplay.classList.remove('hidden');
 });
 
-// Google Services Integration - Gemini AI Simulator
+// Simulate AI Study Plan
 aiBtn.addEventListener('click', () => {
   aiBtn.innerText = "Analyzing via Google Gemini...";
   aiBtn.disabled = true;
   
-  // Simulate API call to Google Generative Language API
   setTimeout(() => {
     const { total } = getTotals();
     let advice = "";
-    if (total === 0) advice = "You haven't logged any study hours yet. Pick a small topic and start with just 30 minutes to build momentum!";
-    else if (total < 5) advice = `Great start with ${total} hours! Based on your pace, Gemini suggests trying the Pomodoro technique to enhance retention.`;
-    else advice = `Impressive dedication! You've logged ${total} hours. Gemini recommends trying to teach these concepts to someone else to solidify your understanding.`;
+    if (total === 0) advice = "You haven't logged any study hours yet. Pick a small concept and start with 30 minutes!";
+    else if (total < 5) advice = `Great start with ${total} hours! Based on your pace, Gemini suggests trying the Feynman technique.`;
+    else advice = `Impressive dedication! You've logged ${total} hours. Gemini recommends building a small project to apply what you've learned.`;
     
     aiText.innerText = `🤖 Gemini: ${advice}`;
     aiText.style.color = "var(--text-main)";
@@ -233,6 +206,39 @@ aiBtn.addEventListener('click', () => {
     aiBtn.innerText = "Refresh Study Plan";
     aiBtn.disabled = false;
   }, 1500);
+});
+
+// Chatbot Logic
+chatHeader.addEventListener('click', () => {
+  chatContainer.classList.toggle('collapsed');
+});
+
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (!text) return;
+  
+  // Add User Msg
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg user';
+  userDiv.innerText = text;
+  chatMessages.appendChild(userDiv);
+  chatInput.value = '';
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  // Add AI Reply after delay
+  setTimeout(() => {
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'msg ai';
+    
+    // Simulate smart responses based on input
+    if(text.toLowerCase().includes('react')) aiDiv.innerText = "React is great! Make sure you understand the difference between useEffect and useMemo.";
+    else if(text.toLowerCase().includes('help')) aiDiv.innerText = "I can help you break down complex concepts into simple analogies. What are you studying?";
+    else aiDiv.innerText = "That's an interesting topic! Would you like me to generate a 5-step learning path for it?";
+    
+    chatMessages.appendChild(aiDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }, 1000);
 });
 
 // Start App
