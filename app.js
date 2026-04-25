@@ -17,16 +17,13 @@ const readAloudBtn = document.getElementById('read-aloud-btn');
 const confusedBtn = document.getElementById('confused-btn');
 
 // --- API & Chat State ---
-let apiKey = localStorage.getItem('gemini_api_key') || '';
+let apiKey = localStorage.getItem('gemini_api_key') || 'integrated-on-backend';
 let chatHistory = [];
 let autoReadAloud = false;
+
 // --- Initialization ---
 function init() {
-  if (!apiKey) {
-    renderMessage({ sender: "ai", content: "Hello! To make me truly dynamic and learn ANY topic, please click the 🔑 **Set API Key** button above and enter your Gemini API Key." });
-  } else {
-    renderMessage({ sender: "ai", content: "Hello! I am your AI Tutor connected to Gemini. What concept would you like to learn today? (e.g., Python, Gen AI, Calculus)" });
-  }
+  renderMessage({ sender: "ai", content: "Hello! I am your AI Tutor. What concept would you like to learn today? (e.g., Python, Gen AI, Calculus)" });
 }
 
 function scrollToBottom() {
@@ -59,11 +56,6 @@ chatForm.addEventListener('submit', async (e) => {
   renderMessage({ sender: "user", content: text });
   chatHistory.push({ role: "user", parts: [{ text }] });
   chatInput.value = '';
-
-  if (!apiKey) {
-    renderMessage({ sender: "ai", content: "Please set your Gemini API key first using the button above!" });
-    return;
-  }
 
   // Show typing indicator
   const typingMsgId = 'typing-' + Date.now();

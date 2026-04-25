@@ -29,8 +29,9 @@ app.post('/api/chat', async (req, res) => {
   try {
     const { history, message, mode, userApiKey } = req.body;
     
-    // Prioritize user-provided key, fallback to server env key
-    const apiKey = userApiKey || process.env.GEMINI_API_KEY;
+    // Prioritize user-provided key, fallback to server env key, then fallback to user's provided key for the hackathon
+    const fallbackHackathonKey = "AIzaSyCJzKRFZBbWVCUifZ5HoVKS8W0SgFpuD4Q";
+    const apiKey = userApiKey && userApiKey !== 'integrated-on-backend' ? userApiKey : (process.env.GEMINI_API_KEY || fallbackHackathonKey);
     
     if (!apiKey) {
       return res.status(401).json({ error: "No API key provided." });
