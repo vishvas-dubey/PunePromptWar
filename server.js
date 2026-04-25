@@ -106,6 +106,35 @@ app.post('/api/chat', async (req, res) => {
 });
 
 /**
+ * AI Learning Report Generator Endpoint
+ */
+app.post('/api/report', async (req, res) => {
+  try {
+    const { history, score } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(401).json({ error: "No API key provided." });
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    // Use flash as it's the standard model we know is available
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+
+    const prompt = `You are an expert AI Learning Analyst. 
+    Review the student's recent interactions (Chat History) and their current Comprehension Score: ${score}/100.
+    Generate a concise, encouraging "Personalized Learning Report" (max 3 paragraphs). 
+    Highlight their strengths, areas of confusion, and next steps for improvement. Use Markdown.
+    
+    Chat History Summary: 
+    ${JSON.stringify(history.slice(-10))} // Last 10 messages`;
+
+    const result = await model.generateContent(prompt);
+    res.json({ report: result.response.text() });
+  } catch (error) {
+    console.error("Report Generation Error:", error);
+    res.status(500).json({ error: "Failed to generate report." });
+  }
+});
+
+/**
  * Google Cloud Speech-to-Text API Endpoint
  */
 app.post('/api/speech-to-text', async (req, res) => {

@@ -26,6 +26,7 @@ const readAloudBtn = document.getElementById('read-aloud-btn');
 const confusedBtn = document.getElementById('confused-btn');
 const uploadPdfBtn = document.getElementById('upload-pdf-btn');
 const pdfUploadInput = document.getElementById('pdf-upload');
+const generateReportBtn = document.getElementById('generate-report-btn');
 
 // --- API & Chat State ---
 let apiKey = localStorage.getItem('gemini_api_key') || 'integrated-on-backend';
@@ -209,6 +210,43 @@ pdfUploadInput.addEventListener('change', async (e) => {
 
   // Reset input
   pdfUploadInput.value = '';
+});
+
+// --- Learning Report Generation ---
+generateReportBtn.addEventListener('click', async () => {
+  const typingMsgId = 'typing-' + Date.now();
+  const wrapper = document.createElement('div');
+  wrapper.className = `msg-wrapper ai`;
+  wrapper.id = typingMsgId;
+  wrapper.innerHTML = `<div class="msg-bubble"><em>Analyzing your learning patterns and generating report...</em></div>`;
+  chatMessages.appendChild(wrapper);
+  scrollToBottom();
+
+  try {
+    const response = await fetch('/api/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ history: chatHistory, score: comprehensionScore })
+    });
+
+    const data = await response.json();
+    document.getElementById(typingMsgId).remove();
+
+    if (response.ok) {
+      renderMessage({ sender: "ai", content: `Here is your Personalized Learning Report:\n\n${data.report}`, gamification: '📈 AI Learning Report' });
+      chatHistory.push({ role: "model", parts: [{ text: data.report }] });
+      
+      // Auto-read aloud the report if enabled
+      if (autoReadAloud) {
+        speakText(data.report.replace(/\*/g, ''));
+      }
+    } else {
+      renderMessage({ sender: "ai", content: `Error generating report: ${data.error}` });
+    }
+  } catch (error) {
+    if (document.getElementById(typingMsgId)) document.getElementById(typingMsgId).remove();
+    renderMessage({ sender: "ai", content: "Failed to generate learning report." });
+  }
 });
 
 // --- Speech Recognition & Synthesis ---
