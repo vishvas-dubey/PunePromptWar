@@ -1,8 +1,12 @@
-FROM nginx:alpine
+FROM node:18-alpine
 
-COPY . /usr/share/nginx/html
+WORKDIR /usr/src/app
 
-EXPOSE 8080
+COPY package*.json ./
 
-# Cloud Run sets the PORT environment variable. We dynamically replace Nginx's default port with $PORT before starting it.
-CMD sed -i -e 's/listen  *80;/listen '"$PORT"';/' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+RUN npm install --production
+
+COPY . .
+
+# Cloud Run dynamic port mapping
+CMD ["sh", "-c", "export PORT=${PORT:-8080} && npm start"]

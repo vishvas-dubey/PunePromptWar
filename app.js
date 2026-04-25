@@ -100,30 +100,26 @@ chatForm.addEventListener('submit', async (e) => {
 });
 
 async function callGeminiAPI(userText) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-  
-  // Format history for Gemini API
-  const contents = [...chatHistory];
-  
-  const systemPrompt = `You are an Adaptive Learning Companion. The user is in '${mode}' mode. 
-  If mode is 'explain', teach them concepts clearly using analogies. 
-  If mode is 'challenge', ask them questions and DO NOT give the answer directly, evaluate their responses.
-  Keep responses concise (max 3 sentences). Use markdown formatting.`;
-
-  // Inject system prompt into the first message
-  if (contents.length > 0) {
-     contents[contents.length - 1].parts[0].text = systemPrompt + "\n\nUser: " + userText;
-  }
+  const url = `/api/chat`; // Hit the Node.js backend
 
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents })
+    body: JSON.stringify({ 
+      history: chatHistory, 
+      message: userText,
+      mode: mode,
+      userApiKey: apiKey 
+    })
   });
 
-  if (!response.ok) throw new Error("API Error");
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || "API Error");
+  }
+  
   const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+  return data.response;
 }
 
 function updateProgress(amount) {
