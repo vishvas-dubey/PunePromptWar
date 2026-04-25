@@ -300,3 +300,94 @@ button:active {
   border: 2px dashed var(--surface-border);
   border-radius: 1rem;
 }
+
+/* Account Profile Feature */
+.account-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.account-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  background: linear-gradient(135deg, #a78bfa, var(--primary-color));
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.avatar svg {
+  width: 24px;
+  height: 24px;
+}
+
+.account-info {
+  flex: 1;
+}
+
+.account-info h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.1rem;
+}
+
+.account-info p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.icon-btn {
+  background: transparent;
+  color: var(--text-muted);
+  width: auto;
+  padding: 0.5rem;
+  border: none;
+}
+
+.icon-btn:hover {
+  color: var(--primary-color);
+  background: rgba(255,255,255,0.05);
+  border-radius: 0.5rem;
+}
+
+.bank-details {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.bank-label {
+  color: var(--text-muted);
+}
+
+.bank-value {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--surface-border);
+  margin: 1.5rem 0;
+}

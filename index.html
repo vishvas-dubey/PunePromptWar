@@ -54,6 +54,46 @@
 
     <!-- Side Panel / Form -->
     <aside class="glass-panel">
+      <!-- Account Details Section -->
+      <div class="account-card" id="account-display">
+        <div class="account-header">
+          <div class="avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div class="account-info">
+            <h3 id="display-name">Guest User</h3>
+            <p id="display-role">Freelancer</p>
+          </div>
+          <button id="edit-account-btn" class="icon-btn" title="Edit Profile">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </button>
+        </div>
+        <div class="bank-details">
+          <span class="bank-label">Primary Account</span>
+          <span class="bank-value" id="display-bank">Not set</span>
+        </div>
+      </div>
+
+      <!-- Edit Account Form (Hidden by default) -->
+      <form id="account-form" class="hidden" style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600;">Edit Profile</h3>
+        <div class="form-group">
+          <input type="text" id="input-name" placeholder="Full Name" required>
+        </div>
+        <div class="form-group">
+          <input type="text" id="input-role" placeholder="Role (e.g. Designer)" required>
+        </div>
+        <div class="form-group">
+          <input type="text" id="input-bank" placeholder="Bank / Wallet Name">
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="submit" style="padding: 0.75rem;">Save</button>
+          <button type="button" id="cancel-edit-btn" style="padding: 0.75rem; background: rgba(255,255,255,0.1); color: var(--text-main);">Cancel</button>
+        </div>
+      </form>
+
+      <hr class="divider">
+
       <h2 style="margin-bottom: 1.5rem; font-weight: 600;">Add Income</h2>
       
       <form id="earning-form">
