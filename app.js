@@ -1,244 +1,131 @@
 "use strict";
 
-/**
- * AI Learning Assistant State Management
- */
-// Use new localstorage keys to avoid clashes with the old "Earning Assistant"
-let topics = JSON.parse(localStorage.getItem('learning_topics')) || [];
-let goal = parseFloat(localStorage.getItem('learning_goal')) || 10;
-let accountProfile = JSON.parse(localStorage.getItem('learner_profile')) || {
-  name: 'Learner',
-  role: 'Student',
-  bank: 'Beginner'
-};
+// --- State Management ---
+let mode = "explain"; // "explain" or "challenge"
+let comprehensionScore = 35; // Mock score
 
-// DOM Elements
-const form = document.getElementById('earning-form');
-const amountInput = document.getElementById('amount');
-const sourceInput = document.getElementById('source');
-const dateInput = document.getElementById('date');
-const categoryInput = document.getElementById('category');
+// --- DOM Elements ---
+const chatMessages = document.getElementById('chat-messages');
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+const modeSwitch = document.getElementById('mode-switch');
+const modeLabel = document.getElementById('mode-label');
+const progressBar = document.getElementById('main-progress');
 
-const earningList = document.getElementById('earning-list');
-const totalEarningsEl = document.getElementById('total-earnings');
-const monthEarningsEl = document.getElementById('month-earnings');
+// --- Pre-defined Scenario (Simulating Backend LLM & Vector DB) ---
+const scenario = [
+  {
+    sender: "ai",
+    content: "Welcome back! Today we are mastering **Python OOP**. Object-Oriented Programming is like building with Lego blocks. You create a blueprint (Class) and make specific objects from it.<br><br>Ready for an example?",
+    delay: 500
+  }
+];
 
-const goalInput = document.getElementById('goal-input');
-const setGoalBtn = document.getElementById('set-goal-btn');
-const goalText = document.getElementById('goal-text');
-const progressBar = document.getElementById('progress-bar');
-
-const accountDisplay = document.getElementById('account-display');
-const accountForm = document.getElementById('account-form');
-const displayName = document.getElementById('display-name');
-const displayRole = document.getElementById('display-role');
-const displayBank = document.getElementById('display-bank');
-
-const editAccountBtn = document.getElementById('edit-account-btn');
-const cancelEditBtn = document.getElementById('cancel-edit-btn');
-const inputName = document.getElementById('input-name');
-const inputRole = document.getElementById('input-role');
-const inputBank = document.getElementById('input-bank');
-
-const aiBtn = document.getElementById('get-ai-advice-btn');
-const aiText = document.getElementById('ai-advice-text');
-
-// Chatbot DOM
-const chatContainer = document.getElementById('chatbot-container');
-const chatHeader = document.getElementById('chatbot-header');
-const chatMessages = document.getElementById('chatbot-messages');
-const chatForm = document.getElementById('chatbot-form');
-const chatInput = document.getElementById('chatbot-input-field');
-
-/**
- * Initialize application state and DOM.
- */
+// --- Initialization ---
 function init() {
-  dateInput.valueAsDate = new Date();
-  goalInput.value = goal;
-  updateAccountDOM();
-  updateDOM();
+  renderMessages();
 }
 
-/**
- * Update the User Profile DOM section.
- */
-function updateAccountDOM() {
-  displayName.innerText = accountProfile.name;
-  displayRole.innerText = accountProfile.role;
-  displayBank.innerText = accountProfile.bank || 'Beginner';
+function scrollToBottom() {
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function formatHours(amount) {
-  return amount + 'h';
-}
-
-function getTotals() {
-  const total = topics.reduce((acc, curr) => acc + curr.amount, 0);
-  const count = topics.length;
+function renderMessage(msg) {
+  const wrapper = document.createElement('div');
+  wrapper.className = `msg-wrapper ${msg.sender}`;
   
-  return { total, count };
-}
-
-function updateDOM() {
-  earningList.innerHTML = '';
-
-  if (topics.length === 0) {
-    earningList.innerHTML = '<div class="empty-state">No concepts added yet. Start learning!</div>';
-  } else {
-    const sortedTopics = [...topics].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    sortedTopics.forEach(topic => {
-      const li = document.createElement('li');
-      li.classList.add('earning-item');
-      li.setAttribute('role', 'listitem');
-      
-      const dateFormatted = new Date(topic.date).toLocaleDateString('en-US', { 
-        year: 'numeric', month: 'short', day: 'numeric' 
-      });
-
-      li.innerHTML = `
-        <div class="item-info">
-          <span class="item-title">${topic.source}</span>
-          <span class="item-date">${dateFormatted} &bull; ${topic.category}</span>
-        </div>
-        <div class="item-right">
-          <span class="item-amount">${formatHours(topic.amount)}</span>
-          <button class="delete-btn" onclick="removeTopic('${topic.id}')" aria-label="Delete ${topic.source}">
-             &times;
-          </button>
-        </div>
-      `;
-      earningList.appendChild(li);
-    });
+  let html = `<div class="msg-bubble">${msg.content}</div>`;
+  if (msg.gamification) {
+    html += `<span class="feedback-badge">${msg.gamification}</span>`;
   }
-
-  const { total, count } = getTotals();
-  totalEarningsEl.innerText = formatHours(total);
-  monthEarningsEl.innerText = count.toString(); // Display count instead of month total
-
-  goalText.innerText = `${formatHours(total)} / ${formatHours(goal)}`;
-  const progressPercentage = Math.min((total / goal) * 100, 100);
-  progressBar.style.width = `${progressPercentage}%`;
-
-  localStorage.setItem('learning_topics', JSON.stringify(topics));
-  localStorage.setItem('learning_goal', goal);
-}
-
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const amount = parseFloat(amountInput.value);
-  const source = sourceInput.value.trim();
-  const date = dateInput.value;
-  const category = categoryInput.value;
-
-  if (!amount || !source || !date) return;
-
-  const newTopic = {
-    id: crypto.randomUUID(),
-    amount,
-    source,
-    date,
-    category
-  };
-
-  topics.push(newTopic);
-  amountInput.value = '';
-  sourceInput.value = '';
-  amountInput.focus();
-  updateDOM();
-});
-
-window.removeTopic = function(id) {
-  topics = topics.filter(t => t.id !== id);
-  updateDOM();
-};
-
-setGoalBtn.addEventListener('click', () => {
-  const newGoal = parseFloat(goalInput.value);
-  if (newGoal && newGoal > 0) {
-    goal = newGoal;
-    updateDOM();
-  }
-});
-
-editAccountBtn.addEventListener('click', () => {
-  accountDisplay.classList.add('hidden');
-  accountForm.classList.remove('hidden');
-  inputName.value = accountProfile.name;
-  inputRole.value = accountProfile.role;
-  inputBank.value = accountProfile.bank === 'Not set' ? '' : accountProfile.bank;
-});
-
-cancelEditBtn.addEventListener('click', () => {
-  accountForm.classList.add('hidden');
-  accountDisplay.classList.remove('hidden');
-});
-
-accountForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  accountProfile = {
-    name: inputName.value.trim() || 'Learner',
-    role: inputRole.value.trim() || 'Student',
-    bank: inputBank.value.trim() || 'Beginner'
-  };
-  localStorage.setItem('learner_profile', JSON.stringify(accountProfile));
-  updateAccountDOM();
-  accountForm.classList.add('hidden');
-  accountDisplay.classList.remove('hidden');
-});
-
-// Simulate AI Study Plan
-aiBtn.addEventListener('click', () => {
-  aiBtn.innerText = "Analyzing via Google Gemini...";
-  aiBtn.disabled = true;
   
-  setTimeout(() => {
-    const { total } = getTotals();
-    let advice = "";
-    if (total === 0) advice = "You haven't logged any study hours yet. Pick a small concept and start with 30 minutes!";
-    else if (total < 5) advice = `Great start with ${total} hours! Based on your pace, Gemini suggests trying the Feynman technique.`;
-    else advice = `Impressive dedication! You've logged ${total} hours. Gemini recommends building a small project to apply what you've learned.`;
-    
-    aiText.innerText = `🤖 Gemini: ${advice}`;
-    aiText.style.color = "var(--text-main)";
-    
-    aiBtn.innerText = "Refresh Study Plan";
-    aiBtn.disabled = false;
-  }, 1500);
-});
+  wrapper.innerHTML = html;
+  chatMessages.appendChild(wrapper);
+  scrollToBottom();
+}
 
-// Chatbot Logic
-chatHeader.addEventListener('click', () => {
-  chatContainer.classList.toggle('collapsed');
-});
+function renderMessages() {
+  chatMessages.innerHTML = '';
+  scenario.forEach(renderMessage);
+}
 
+// --- Interaction Logic (Simulated AI Engine) ---
 chatForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const text = chatInput.value.trim();
   if (!text) return;
-  
-  // Add User Msg
-  const userDiv = document.createElement('div');
-  userDiv.className = 'msg user';
-  userDiv.innerText = text;
-  chatMessages.appendChild(userDiv);
-  chatInput.value = '';
-  chatMessages.scrollTop = chatMessages.scrollHeight;
 
-  // Add AI Reply after delay
+  // 1. Add User Message
+  renderMessage({ sender: "user", content: text });
+  chatInput.value = '';
+
+  // 2. Simulate AI Analysis & Response
   setTimeout(() => {
-    const aiDiv = document.createElement('div');
-    aiDiv.className = 'msg ai';
-    
-    // Simulate smart responses based on input
-    if(text.toLowerCase().includes('react')) aiDiv.innerText = "React is great! Make sure you understand the difference between useEffect and useMemo.";
-    else if(text.toLowerCase().includes('help')) aiDiv.innerText = "I can help you break down complex concepts into simple analogies. What are you studying?";
-    else aiDiv.innerText = "That's an interesting topic! Would you like me to generate a 5-step learning path for it?";
-    
-    chatMessages.appendChild(aiDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }, 1000);
+    analyzeAndRespond(text);
+  }, 800);
+});
+
+function analyzeAndRespond(input) {
+  const lowerInput = input.toLowerCase();
+  let aiResponse = "";
+  let gamification = null;
+
+  if (mode === "challenge") {
+    // Challenge Mode Logic
+    if (lowerInput.includes("car") || lowerInput.includes("ferrari")) {
+      if (lowerInput.includes("new")) {
+        aiResponse = "❌ Close! But `new` is JavaScript/Java syntax. In Python, we just call the class directly without `new`. Try again.";
+      } else {
+        aiResponse = "✅ Perfect! You correctly instantiated a Python object.<br><code>ferrari = Car('red')</code>";
+        gamification = "🎯 +10XP (Challenge Passed)";
+        updateProgress(10);
+      }
+    } else {
+      aiResponse = "Think about how we instantiate classes in Python. Write the code to create a red Ferrari using a `Car` class.";
+    }
+  } else {
+    // Explain Mode Logic
+    if (lowerInput.includes("yes") || lowerInput.includes("sure")) {
+      aiResponse = "Great! Here is a simple Python Class:<br><pre><code>class Car:\n  def __init__(self, color):\n    self.color = color</code></pre><br>Now, how would you create a red Ferrari using this class?";
+      modeSwitch.checked = true;
+      toggleMode(); // Automatically switch to challenge to test them
+    } else if (lowerInput.includes("don't get it") || lowerInput.includes("confused")) {
+      aiResponse = "No worries! Let's simplify. Imagine a `Class` is a cookie cutter, and the `Object` is the actual cookie you bake. Make sense?";
+      gamification = "💡 Switched to ELI5 mode";
+    } else {
+      aiResponse = "Interesting! Let's keep exploring Python classes. Try to define what an `__init__` function does.";
+    }
+  }
+
+  renderMessage({ sender: "ai", content: aiResponse, gamification });
+}
+
+function updateProgress(amount) {
+  comprehensionScore += amount;
+  if (comprehensionScore > 100) comprehensionScore = 100;
+  progressBar.style.width = `${comprehensionScore}%`;
+  document.querySelector('.progress-text').innerText = `${comprehensionScore}% Complete`;
+}
+
+// --- Mode Toggle ---
+function toggleMode() {
+  if (modeSwitch.checked) {
+    mode = "challenge";
+    modeLabel.innerText = "Challenge Mode";
+    modeLabel.style.color = "var(--warning)";
+  } else {
+    mode = "explain";
+    modeLabel.innerText = "Explain Mode";
+    modeLabel.style.color = "var(--primary)";
+  }
+}
+
+modeSwitch.addEventListener('change', toggleMode);
+
+// Event listener for "I don't get it" helper button
+document.querySelector('.context-actions button:nth-child(2)').addEventListener('click', () => {
+  chatInput.value = "I don't get it, can you explain simpler?";
+  chatForm.dispatchEvent(new Event('submit'));
 });
 
 // Start App
