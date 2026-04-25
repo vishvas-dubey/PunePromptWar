@@ -101,7 +101,7 @@ chatForm.addEventListener('submit', async (e) => {
     }
   } catch (error) {
     document.getElementById(typingMsgId).remove();
-    renderMessage({ sender: "ai", content: "Error connecting to AI. Please check your API key." });
+    renderMessage({ sender: "ai", content: `⚠️ Error: ${error.message}. Please check if your API key is valid and has Gemini 1.5 Flash access.` });
   }
 });
 
