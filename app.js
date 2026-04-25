@@ -24,6 +24,8 @@ const apiKeyBtn = document.getElementById('api-key-btn');
 const micBtn = document.getElementById('mic-btn');
 const readAloudBtn = document.getElementById('read-aloud-btn');
 const confusedBtn = document.getElementById('confused-btn');
+const uploadPdfBtn = document.getElementById('upload-pdf-btn');
+const pdfUploadInput = document.getElementById('pdf-upload');
 
 // --- API & Chat State ---
 let apiKey = localStorage.getItem('gemini_api_key') || 'integrated-on-backend';
@@ -161,6 +163,52 @@ apiKeyBtn.addEventListener('click', () => {
 confusedBtn.addEventListener('click', () => {
   chatInput.value = "I don't get it, can you explain simpler?";
   chatForm.dispatchEvent(new Event('submit'));
+});
+
+// --- PDF Upload & RAG Integration ---
+uploadPdfBtn.addEventListener('click', () => {
+  pdfUploadInput.click();
+});
+
+pdfUploadInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  renderMessage({ sender: "user", content: `*Uploaded PDF: ${file.name}*` });
+  
+  const typingMsgId = 'typing-' + Date.now();
+  const wrapper = document.createElement('div');
+  wrapper.className = `msg-wrapper ai`;
+  wrapper.id = typingMsgId;
+  wrapper.innerHTML = `<div class="msg-bubble"><em>Reading document and generating embeddings...</em></div>`;
+  chatMessages.appendChild(wrapper);
+  scrollToBottom();
+
+  const formData = new FormData();
+  formData.append('pdf', file);
+
+  try {
+    const response = await fetch('/api/rag/upload-pdf', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+    document.getElementById(typingMsgId).remove();
+
+    if (response.ok) {
+      chatHistory.push({ role: "model", parts: [{ text: data.quiz }] });
+      renderMessage({ sender: "ai", content: `I have studied the document! Here is a quiz to test your knowledge:\n\n${data.quiz}`, gamification: '📚 Context Loaded' });
+    } else {
+      renderMessage({ sender: "ai", content: `Error processing PDF: ${data.error}` });
+    }
+  } catch (error) {
+    document.getElementById(typingMsgId).remove();
+    renderMessage({ sender: "ai", content: "Failed to upload and process the PDF." });
+  }
+
+  // Reset input
+  pdfUploadInput.value = '';
 });
 
 // --- Speech Recognition & Synthesis ---

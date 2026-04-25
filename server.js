@@ -18,6 +18,7 @@ const { VertexAI } = require('@google-cloud/vertexai');
 const speech = require('@google-cloud/speech');
 const { Translate } = require('@google-cloud/translate').v2;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const ragService = require('./rag_service');
 
 require('dotenv').config();
 
@@ -31,6 +32,9 @@ app.use(helmet({
 app.use(cors());
 app.use(compression());
 app.use(express.json());
+
+// Integrate RAG Router
+app.use('/api/rag', ragService.router);
 
 // Serve static files from root (for hackathon structure)
 app.use(express.static(__dirname));
@@ -61,11 +65,38 @@ app.post('/api/chat', async (req, res) => {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+    // --- RAG IMPLEMENTATION ---
+    let ragContext = "";
+    const vectorStore = ragService.getVectorStore();
+    
+    if (vectorStore.length > 0) {
+      try {
+        const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const userEmbeddingResult = await embeddingModel.embedContent(message);
+        const userVector = userEmbeddingResult.embedding.values;
+
+        // Vector Search: Find top 2 most similar chunks
+        const similarities = vectorStore.map(item => ({
+          text: item.text,
+          score: ragService.cosineSimilarity(userVector, item.vector)
+        }));
+        
+        similarities.sort((a, b) => b.score - a.score);
+        const topChunks = similarities.slice(0, 2).map(s => s.text).join('\n\n');
+        
+        if (similarities[0].score > 0.5) {
+          ragContext = `\n\nContext from user's PDF:\n${topChunks}`;
+        }
+      } catch (e) {
+        console.error("Vector Search Error:", e);
+      }
+    }
+
     const chat = model.startChat({
       history: history.map(h => ({ role: h.role, parts: [{ text: h.parts[0].text }] }))
     });
 
-    const fullMessage = `System: ${systemPrompt}\n\nUser: ${message}`;
+    const fullMessage = `System: ${systemPrompt}${ragContext}\n\nUser: ${message}`;
     const result = await chat.sendMessage(fullMessage);
     res.json({ response: result.response.text() });
 
