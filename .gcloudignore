@@ -1,0 +1,8 @@
+.git
+.gitignore
+node_modules
+.env
+npm-debug.log
+tests
+*.test.js
+package-lock.json

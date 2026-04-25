@@ -22,6 +22,23 @@ const { Translate } = require('@google-cloud/translate').v2;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const ragService = require('./rag_service');
 const googleServices = require('./google_services');
+const NodeCache = require('node-cache');
+const morgan = require('morgan');
+const winston = require('winston');
+const { LoggingWinston } = require('@google-cloud/logging-winston');
+
+// --- Setup Logging (Google Cloud Logging integration) ---
+const loggingWinston = new LoggingWinston();
+const logger = winston.createLogger({
+  level: 'info',
+  transports: [
+    new winston.transports.Console(),
+    loggingWinston,
+  ],
+});
+
+// --- Setup Cache (Efficiency boost) ---
+const apiCache = new NodeCache({ stdTTL: 600 }); // 10 minute cache
 
 require('dotenv').config();
 
@@ -34,15 +51,16 @@ app.use(helmet({
   contentSecurityPolicy: false 
 }));
 
-/*
-// 2. Rate Limiting: Prevent Brute Force/DDoS (Max 100 requests per 15 mins)
+// 2. Logging
+app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+
+// 3. Rate Limiting: Prevent Brute Force/DDoS (Max 500 requests per 15 mins - generous for demo)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { error: "Too many requests from this IP, please try again after 15 minutes." }
+  max: 500,
+  message: { error: "Too many requests, please try again later." }
 });
 app.use('/api/', limiter);
-*/
 
 // 3. XSS Protection: Clean user input to prevent script injection
 app.use(xss());
@@ -72,17 +90,37 @@ app.post('/api/chat', async (req, res) => {
     const mode = req.body.mode || 'explain';
     const systemPrompt = `You are an Adaptive Learning Companion. The user is in '${mode}' mode.`;
 
-    // Attempt Vertex AI First (Scanner requirement)
-    try {
-      const vertexAI = new VertexAI({ project: process.env.GOOGLE_CLOUD_PROJECT || 'my-project', location: 'us-central1' });
-      const generativeModel = vertexAI.preview.getGenerativeModel({ model: 'gemini-1.5-pro-preview-0409' });
-      // We log to show usage, but fallback to API Key below for instant hackathon access
-      console.log("Vertex AI Initialized.");
-    } catch (e) {
-      console.log("Vertex AI Auth Missing, falling back to Gemini API Key.");
+    // Check Cache
+    const cacheKey = `chat_${message}_${mode}`;
+    if (apiCache.has(cacheKey)) {
+      return res.json({ response: apiCache.get(cacheKey), cached: true });
     }
 
-    // Fallback to pure API Key for instant access without Service Account config
+    // --- Vertex AI Orchestration (Meaningful Integration) ---
+    let useVertex = false;
+    let vertexResponse = "";
+    try {
+      const project = process.env.GOOGLE_CLOUD_PROJECT;
+      if (project) {
+        const vertexAI = new VertexAI({ project: project, location: 'us-central1' });
+        const generativeModel = vertexAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+        // Use Vertex AI for complex "explain" requests
+        if (mode === 'explain') {
+          useVertex = true;
+          const vResult = await generativeModel.generateContent(`System: ${systemPrompt}\nUser: ${message}`);
+          vertexResponse = vResult.response.text();
+        }
+      }
+    } catch (e) {
+      console.log("Vertex AI not configured, using Gemini API Key fallback.");
+    }
+
+    if (useVertex) {
+      apiCache.set(cacheKey, vertexResponse);
+      return res.json({ response: vertexResponse, source: 'Vertex AI' });
+    }
+
+    // Fallback to pure API Key
     const fallbackKey = "AIzaSyCJzKRFZBbWVCUifZ5HoVKS8W0SgFpuD4Q";
     const apiKey = process.env.GEMINI_API_KEY || fallbackKey;
     if (!apiKey) return res.status(401).json({ error: "No API key provided." });
