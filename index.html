@@ -13,24 +13,24 @@
 <body>
 
   <!-- Top Navigation -->
-  <nav class="navbar">
+  <nav class="navbar" role="navigation" aria-label="Main Navigation">
     <div class="logo">
-      <div class="logo-icon"></div>
-      AdaptiveLearn
+      <div class="logo-icon" aria-hidden="true"></div>
+      <span>AdaptiveLearn</span>
     </div>
-    <div class="nav-center">
+    <div class="nav-center" aria-label="User Stats">
       <div class="streak-badge">🔥 Streak: 12 Days</div>
       <div class="level-badge">🏆 Level 5: Scholar</div>
     </div>
-    <div class="profile-avatar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    <div class="profile-avatar" role="button" aria-label="User Profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     </div>
   </nav>
 
-  <div class="main-container">
+  <main class="main-container">
     
     <!-- Left Column: Dashboard & Knowledge Graph -->
-    <div class="dashboard-col">
+    <div class="dashboard-col" role="region" aria-label="Dashboard Statistics">
       
       <!-- Current Goal -->
       <section class="panel current-goal">
@@ -151,7 +151,7 @@
       </section>
     </div>
 
-  </div>
+  </main>
 
   <script src="app.js"></script>
 </body>

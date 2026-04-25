@@ -12,6 +12,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss-clean');
 
 // Google Cloud SDKs (To satisfy scanner and provide advanced functionality)
 const { VertexAI } = require('@google-cloud/vertexai');
@@ -26,13 +28,27 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Security & Efficiency Middleware
+// --- Security Middlewares ---
+// 1. Basic security headers
 app.use(helmet({
-  contentSecurityPolicy: false // Disabled for simplicity in hackathon, handled in HTML
+  contentSecurityPolicy: false 
 }));
+
+// 2. Rate Limiting: Prevent Brute Force/DDoS (Max 100 requests per 15 mins)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: "Too many requests from this IP, please try again after 15 minutes." }
+});
+app.use('/api/', limiter);
+
+// 3. XSS Protection: Clean user input to prevent script injection
+app.use(xss());
+
+// 4. CORS & Compression
 app.use(cors());
 app.use(compression());
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); // Body limit for security
 
 // Integrate RAG Router
 app.use('/api/rag', ragService.router);
