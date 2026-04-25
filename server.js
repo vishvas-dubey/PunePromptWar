@@ -65,7 +65,9 @@ app.use(express.static(__dirname));
  */
 app.post('/api/chat', async (req, res) => {
   try {
-    const { history, message, mode } = req.body;
+    const history = req.body.history || [];
+    const message = req.body.message;
+    const mode = req.body.mode || 'explain';
     const systemPrompt = `You are an Adaptive Learning Companion. The user is in '${mode}' mode.`;
 
     // Attempt Vertex AI First (Scanner requirement)
@@ -114,7 +116,10 @@ app.post('/api/chat', async (req, res) => {
     }
 
     const chat = model.startChat({
-      history: history.map(h => ({ role: h.role, parts: [{ text: h.parts[0].text }] }))
+      history: history.map(h => ({ 
+        role: h.role === "ai" ? "model" : h.role, 
+        parts: [{ text: h.parts[0].text }] 
+      }))
     });
 
     const fullMessage = `System: ${systemPrompt}${ragContext}\n\nUser: ${message}`;
@@ -122,7 +127,8 @@ app.post('/api/chat', async (req, res) => {
     res.json({ response: result.response.text() });
 
   } catch (error) {
-    res.status(500).json({ error: "Failed to connect to Google API" });
+    console.error("Chat API Error:", error);
+    res.status(500).json({ error: `Failed to connect to AI: ${error.message}` });
   }
 });
 
