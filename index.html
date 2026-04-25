@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Earning Assistant | AI Financial Tracker</title>
-  <meta name="description" content="AI-powered dashboard to track earnings and get financial advice.">
+  <title>AI Learning Assistant | Smart Concept Tracker</title>
+  <meta name="description" content="Intelligent assistant to learn new concepts, adapt to your pace, and personalize content.">
   
   <!-- Security: Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://firebaselogging.googleapis.com https://generativelanguage.googleapis.com https://translate.googleapis.com https://translate.google.com 'unsafe-inline' 'unsafe-eval';">
@@ -20,9 +20,9 @@
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
     const firebaseConfig = {
       apiKey: "MOCK_API_KEY_FOR_SCORE",
-      authDomain: "earning-assistant.firebaseapp.com",
-      projectId: "earning-assistant",
-      storageBucket: "earning-assistant.appspot.com",
+      authDomain: "learning-assistant.firebaseapp.com",
+      projectId: "learning-assistant",
+      storageBucket: "learning-assistant.appspot.com",
       messagingSenderId: "123456789",
       appId: "1:123456789:web:abcdef",
       measurementId: "G-ABCDEF"
@@ -46,47 +46,47 @@
     <!-- Main Dashboard Section -->
     <main class="glass-panel" role="main" aria-label="Main Dashboard">
       <header>
-        <h1>AI Earning Assistant</h1>
-        <p class="subtitle">Track income and get Gemini AI financial insights.</p>
+        <h1>AI Learning Assistant</h1>
+        <p class="subtitle">Track your learning pace and get personalized AI explanations.</p>
       </header>
 
       <!-- AI Insights Section (Google Services & Problem Alignment) -->
-      <section class="ai-insights" aria-label="AI Financial Insights" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-color); padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
+      <section class="ai-insights" aria-label="Personalized Learning Path" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-color); padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
         <h3 style="color: var(--accent-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-          Google Gemini AI Advice
+          Google Gemini AI Tutor
         </h3>
-        <p id="ai-advice-text" style="font-size: 0.9rem; line-height: 1.5;">Click below to analyze your earnings using AI...</p>
-        <button id="get-ai-advice-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--accent-color); width: auto; font-size: 0.9rem;" aria-label="Get AI Advice">Generate AI Insights</button>
+        <p id="ai-advice-text" style="font-size: 0.9rem; line-height: 1.5;">Click below to generate a personalized study plan based on your recent topics...</p>
+        <button id="get-ai-advice-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--accent-color); width: auto; font-size: 0.9rem;" aria-label="Get AI Study Plan">Generate Study Plan</button>
       </section>
 
-      <section class="stats-grid" aria-label="Earning Statistics">
-        <div class="stat-card" role="region" aria-label="Total Earnings">
-          <div class="stat-title">Total Earnings</div>
-          <div class="stat-value" id="total-earnings" aria-live="polite">$0.00</div>
+      <section class="stats-grid" aria-label="Learning Statistics">
+        <div class="stat-card" role="region" aria-label="Total Study Hours">
+          <div class="stat-title">Study Hours</div>
+          <div class="stat-value" id="total-earnings" aria-live="polite">0h</div>
         </div>
-        <div class="stat-card" role="region" aria-label="This Month Earnings">
-          <div class="stat-title">This Month</div>
-          <div class="stat-value" id="month-earnings" aria-live="polite">$0.00</div>
+        <div class="stat-card" role="region" aria-label="Concepts Mastered">
+          <div class="stat-title">Concepts Mastered</div>
+          <div class="stat-value" id="month-earnings" aria-live="polite">0</div>
         </div>
       </section>
 
-      <section class="goal-container" aria-label="Goal Progress">
+      <section class="goal-container" aria-label="Weekly Goal Progress">
         <div class="goal-header">
-          <span>Goal Progress</span>
-          <span id="goal-text" aria-live="polite">$0 / $5000</span>
+          <span>Weekly Goal Progress</span>
+          <span id="goal-text" aria-live="polite">0h / 10h</span>
         </div>
         <div class="progress-bar-bg" aria-hidden="true">
           <div class="progress-bar-fill" id="progress-bar"></div>
         </div>
       </section>
 
-      <section style="margin-top: 3rem;" aria-label="Recent Earnings List">
+      <section style="margin-top: 3rem;" aria-label="Recent Topics List">
         <div class="list-header">
-          <h2>Recent Earnings</h2>
+          <h2>Recent Concepts</h2>
         </div>
         <ul class="earning-list" id="earning-list" role="list">
-          <!-- Earnings will be injected here via JS -->
+          <!-- Topics will be injected here via JS -->
         </ul>
       </section>
     </main>
@@ -94,39 +94,39 @@
     <!-- Side Panel / Form -->
     <aside class="glass-panel" role="complementary" aria-label="Sidebar Actions">
       <!-- Account Details Section -->
-      <section class="account-card" id="account-display" aria-label="User Profile">
+      <section class="account-card" id="account-display" aria-label="Learner Profile">
         <div class="account-header">
           <div class="avatar" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </div>
           <div class="account-info">
-            <h3 id="display-name">Guest User</h3>
-            <p id="display-role">Freelancer</p>
+            <h3 id="display-name">Learner</h3>
+            <p id="display-role">Student</p>
           </div>
           <button id="edit-account-btn" class="icon-btn" aria-label="Edit Profile" title="Edit Profile">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
           </button>
         </div>
         <div class="bank-details">
-          <span class="bank-label">Primary Account</span>
-          <span class="bank-value" id="display-bank">Not set</span>
+          <span class="bank-label">Current Level</span>
+          <span class="bank-value" id="display-bank">Beginner</span>
         </div>
       </section>
 
       <!-- Edit Account Form (Hidden by default) -->
-      <form id="account-form" class="hidden" style="margin-bottom: 2rem;" aria-label="Edit Account Form">
+      <form id="account-form" class="hidden" style="margin-bottom: 2rem;" aria-label="Edit Profile Form">
         <h3 style="font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600;">Edit Profile</h3>
         <div class="form-group">
           <label for="input-name" class="sr-only" style="display:none;">Full Name</label>
           <input type="text" id="input-name" placeholder="Full Name" required aria-required="true">
         </div>
         <div class="form-group">
-          <label for="input-role" class="sr-only" style="display:none;">Role</label>
-          <input type="text" id="input-role" placeholder="Role (e.g. Designer)" required aria-required="true">
+          <label for="input-role" class="sr-only" style="display:none;">Role (e.g. Developer)</label>
+          <input type="text" id="input-role" placeholder="Role (e.g. Developer)" required aria-required="true">
         </div>
         <div class="form-group">
-          <label for="input-bank" class="sr-only" style="display:none;">Bank Name</label>
-          <input type="text" id="input-bank" placeholder="Bank / Wallet Name">
+          <label for="input-bank" class="sr-only" style="display:none;">Experience Level</label>
+          <input type="text" id="input-bank" placeholder="Beginner / Intermediate / Expert">
         </div>
         <div style="display: flex; gap: 0.5rem;">
           <button type="submit" style="padding: 0.75rem;" aria-label="Save Profile">Save</button>
@@ -136,17 +136,17 @@
 
       <hr class="divider">
 
-      <h2 style="margin-bottom: 1.5rem; font-weight: 600;">Add Income</h2>
+      <h2 style="margin-bottom: 1.5rem; font-weight: 600;">Log New Concept</h2>
       
-      <form id="earning-form" aria-label="Add Earning Form">
+      <form id="earning-form" aria-label="Log Concept Form">
         <div class="form-group">
-          <label for="amount">Amount ($)</label>
-          <input type="number" id="amount" placeholder="0.00" step="0.01" required min="0.01" aria-required="true">
+          <label for="amount">Hours Spent</label>
+          <input type="number" id="amount" placeholder="0.5" step="0.5" required min="0.5" aria-required="true">
         </div>
 
         <div class="form-group">
-          <label for="source">Source / Description</label>
-          <input type="text" id="source" placeholder="e.g. Freelance project, Salary" required aria-required="true">
+          <label for="source">Concept Topic</label>
+          <input type="text" id="source" placeholder="e.g. React Hooks, Thermodynamics" required aria-required="true">
         </div>
 
         <div class="form-group">
@@ -155,23 +155,24 @@
         </div>
 
         <div class="form-group">
-          <label for="category">Category</label>
-          <select id="category" aria-label="Select Category">
-            <option value="salary">Salary</option>
-            <option value="freelance">Freelance</option>
-            <option value="investments">Investments</option>
-            <option value="other">Other</option>
+          <label for="category">Subject</label>
+          <select id="category" aria-label="Select Subject">
+            <option value="Computer Science">Computer Science</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Science">Science</option>
+            <option value="Language">Language</option>
+            <option value="Other">Other</option>
           </select>
         </div>
 
-        <button type="submit" aria-label="Submit Earning">Add Earning</button>
+        <button type="submit" aria-label="Log Concept">Log Concept</button>
       </form>
 
       <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--surface-border);">
-        <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 600;">Monthly Goal</h3>
+        <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 600;">Weekly Target Hours</h3>
         <div class="form-group">
-          <label for="goal-input" class="sr-only" style="display:none;">Set Monthly Goal</label>
-          <input type="number" id="goal-input" placeholder="Set new goal" step="100" aria-label="Monthly Goal Input">
+          <label for="goal-input" class="sr-only" style="display:none;">Set Weekly Goal</label>
+          <input type="number" id="goal-input" placeholder="Set new goal" step="1" aria-label="Weekly Goal Input">
         </div>
         <button type="button" id="set-goal-btn" style="background: rgba(255,255,255,0.1); color: var(--text-main);" aria-label="Update Goal">Update Goal</button>
       </div>

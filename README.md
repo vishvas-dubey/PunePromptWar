@@ -1,8 +1,8 @@
-# Pune Prompt War - Earning Assistant
+# Pune Prompt War - AI Learning Assistant
 
 ## Problem Statement Alignment
-**Problem Statement:** Create an intuitive, accessible, and highly efficient web application that leverages Google Services (like Firebase and Generative AI APIs) to solve a daily financial tracking problem.
-**Our Solution:** The "Earning Assistant" is an AI-powered financial dashboard. It provides real-time earning tracking with a dynamic glassmorphism UI, integrated with Google Firebase Analytics and Google Gemini AI to provide actionable financial insights to the user.
+**Problem Statement:** Create an intelligent assistant that helps users learn new concepts effectively and efficiently. The system should personalize content and adapt to user pace and understanding.
+**Our Solution:** The "AI Learning Assistant" is a personalized educational dashboard. It allows users to track topics they are learning, the time spent, and their difficulty. It integrates with Google Gemini AI to dynamically generate personalized learning paths and adapt explanations based on the user's logged pace. Google Translate API ensures the learning content is accessible in any language.
 
 ## Features
 - **Google Services Integration:** Uses Firebase SDK for analytics, Google Gemini AI API for generating financial advice, and **Google Translate API** for seamless multilingual support.

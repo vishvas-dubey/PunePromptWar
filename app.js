@@ -4,11 +4,11 @@
  * Earning Assistant State Management
  */
 let earnings = JSON.parse(localStorage.getItem('earnings')) || [];
-let goal = parseFloat(localStorage.getItem('goal')) || 5000;
+let goal = parseFloat(localStorage.getItem('goal')) || 10;
 let accountProfile = JSON.parse(localStorage.getItem('accountProfile')) || {
-  name: 'Guest User',
-  role: 'Freelancer',
-  bank: 'Not set'
+  name: 'Learner',
+  role: 'Student',
+  bank: 'Beginner'
 };
 
 // DOM Elements
@@ -64,15 +64,12 @@ function updateAccountDOM() {
 }
 
 /**
- * Format a number as USD currency.
+ * Format a number as hours.
  * @param {number} amount - The numeric value.
- * @returns {string} Formatted currency string.
+ * @returns {string} Formatted hours string.
  */
-function formatMoney(amount) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount);
+function formatHours(amount) {
+  return amount + 'h';
 }
 
 /**
@@ -121,7 +118,7 @@ function updateDOM() {
           <span class="item-date">${dateFormatted} &bull; ${earning.category}</span>
         </div>
         <div class="item-right">
-          <span class="item-amount">${formatMoney(earning.amount)}</span>
+          <span class="item-amount">${formatHours(earning.amount)}</span>
           <button class="delete-btn" onclick="removeEarning('${earning.id}')" aria-label="Delete ${earning.source}">
              &times;
           </button>
@@ -133,10 +130,10 @@ function updateDOM() {
   }
 
   const { total, monthTotal } = getTotals();
-  totalEarningsEl.innerText = formatMoney(total);
-  monthEarningsEl.innerText = formatMoney(monthTotal);
+  totalEarningsEl.innerText = formatHours(total);
+  monthEarningsEl.innerText = formatHours(monthTotal);
 
-  goalText.innerText = `${formatMoney(monthTotal)} / ${formatMoney(goal)}`;
+  goalText.innerText = `${formatHours(monthTotal)} / ${formatHours(goal)}`;
   const progressPercentage = Math.min((monthTotal / goal) * 100, 100);
   progressBar.style.width = `${progressPercentage}%`;
 
@@ -207,9 +204,9 @@ cancelEditBtn.addEventListener('click', () => {
 accountForm.addEventListener('submit', (e) => {
   e.preventDefault();
   accountProfile = {
-    name: inputName.value.trim() || 'Guest User',
-    role: inputRole.value.trim() || 'Freelancer',
-    bank: inputBank.value.trim() || 'Not set'
+    name: inputName.value.trim() || 'Learner',
+    role: inputRole.value.trim() || 'Student',
+    bank: inputBank.value.trim() || 'Beginner'
   };
   localStorage.setItem('accountProfile', JSON.stringify(accountProfile));
   updateAccountDOM();
@@ -226,14 +223,14 @@ aiBtn.addEventListener('click', () => {
   setTimeout(() => {
     const { total } = getTotals();
     let advice = "";
-    if (total === 0) advice = "You haven't earned anything yet. Start logging your income to get personalized AI advice!";
-    else if (total < 1000) advice = "Great start! Consider diversifying your income streams and putting 20% into savings.";
-    else advice = `Impressive! You've logged $${total}. You're on track. Gemini suggests looking into low-index funds for long-term growth.`;
+    if (total === 0) advice = "You haven't logged any study hours yet. Pick a small topic and start with just 30 minutes to build momentum!";
+    else if (total < 5) advice = `Great start with ${total} hours! Based on your pace, Gemini suggests trying the Pomodoro technique to enhance retention.`;
+    else advice = `Impressive dedication! You've logged ${total} hours. Gemini recommends trying to teach these concepts to someone else to solidify your understanding.`;
     
     aiText.innerText = `🤖 Gemini: ${advice}`;
     aiText.style.color = "var(--text-main)";
     
-    aiBtn.innerText = "Refresh Advice";
+    aiBtn.innerText = "Refresh Study Plan";
     aiBtn.disabled = false;
   }, 1500);
 });
