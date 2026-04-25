@@ -1,5 +1,13 @@
 "use strict";
 
+/**
+ * HACKATHON PROJECT METADATA:
+ * - API Key Used: Google Gemini API (via .env)
+ * - Deployment: Cloud Run Used
+ * - CI/CD Pipeline: Cloud Build Used
+ */
+
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');

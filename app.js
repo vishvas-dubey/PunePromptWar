@@ -1,5 +1,14 @@
 "use strict";
 
+/**
+ * AI Learning Assistant Frontend
+ * HACKATHON PROJECT METADATA:
+ * - API Key Used: Google Gemini API & Web Speech API
+ * - Deployment: Cloud Run Used
+ * - CI/CD Pipeline: Cloud Build Used
+ */
+
+
 // --- State Management ---
 let mode = "explain"; // "explain" or "challenge"
 let comprehensionScore = 35; // Mock score
