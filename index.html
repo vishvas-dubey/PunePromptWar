@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earning Assistant | Track Your Hustle</title>
+  <meta name="description" content="A beautiful and intelligent dashboard to track your earnings, income, and side hustles.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Main Dashboard Section -->
+    <main class="glass-panel">
+      <header>
+        <h1>Earning Assistant</h1>
+        <p class="subtitle">Track your income and reach your financial goals.</p>
+      </header>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-title">Total Earnings</div>
+          <div class="stat-value" id="total-earnings">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">This Month</div>
+          <div class="stat-value" id="month-earnings">$0.00</div>
+        </div>
+      </div>
+
+      <div class="goal-container">
+        <div class="goal-header">
+          <span>Goal Progress</span>
+          <span id="goal-text">$0 / $5000</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 3rem;">
+        <div class="list-header">
+          <h2>Recent Earnings</h2>
+        </div>
+        <ul class="earning-list" id="earning-list">
+          <!-- Earnings will be injected here via JS -->
+        </ul>
+      </div>
+    </main>
+
+    <!-- Side Panel / Form -->
+    <aside class="glass-panel">
+      <h2 style="margin-bottom: 1.5rem; font-weight: 600;">Add Income</h2>
+      
+      <form id="earning-form">
+        <div class="form-group">
+          <label for="amount">Amount ($)</label>
+          <input type="number" id="amount" placeholder="0.00" step="0.01" required min="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="source">Source / Description</label>
+          <input type="text" id="source" placeholder="e.g. Freelance project, Salary" required>
+        </div>
+
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" id="date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category">
+            <option value="salary">Salary</option>
+            <option value="freelance">Freelance</option>
+            <option value="investments">Investments</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <button type="submit">Add Earning</button>
+      </form>
+
+      <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--surface-border);">
+        <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 600;">Monthly Goal</h3>
+        <div class="form-group">
+          <input type="number" id="goal-input" placeholder="Set new goal" step="100">
+        </div>
+        <button type="button" id="set-goal-btn" style="background: rgba(255,255,255,0.1); color: var(--text-main);">Update Goal</button>
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
