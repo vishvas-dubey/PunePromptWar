@@ -329,3 +329,84 @@ input:checked + .slider:before { transform: translateX(20px); }
   gap: 1.5rem;
   padding-left: 0.5rem;
 }
+
+/* --- Google Cloud Services Panel --- */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.services-list::-webkit-scrollbar { width: 3px; }
+.services-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+
+.service-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.2s ease;
+}
+.service-card:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99,102,241,0.4);
+  transform: translateX(3px);
+}
+.service-card .svc-icon { font-size: 1.4rem; flex-shrink: 0; line-height: 1; }
+.service-card .svc-body { flex: 1; min-width: 0; }
+.service-card .svc-name {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.svc-tag {
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  background: rgba(99,102,241,0.25);
+  color: #a5b4fc;
+  border-radius: 20px;
+}
+.svc-used {
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border-radius: 20px;
+}
+.service-card .svc-tagline {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.service-card .svc-links {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+.svc-link {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(99,102,241,0.35);
+  color: #a5b4fc;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: none;
+}
+.svc-link:hover { background: rgba(99,102,241,0.25); color: #fff; }
+.svc-link.ask-ai { border-color: rgba(16,185,129,0.35); color: #6ee7b7; }
+.svc-link.ask-ai:hover { background: rgba(16,185,129,0.2); }

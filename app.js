@@ -298,5 +298,55 @@ function speakText(text) {
   }
 }
 
+// --- Google Cloud Services Panel ---
+async function loadGoogleServices() {
+  const listEl = document.getElementById('services-list');
+  const loadingEl = document.getElementById('services-loading');
+
+  try {
+    const res = await fetch('/api/services');
+    const data = await res.json();
+
+    loadingEl.style.display = 'none';
+    listEl.style.display = 'flex';
+
+    data.services.forEach(svc => {
+      const card = document.createElement('div');
+      card.className = 'service-card';
+      card.innerHTML = `
+        <div class="svc-icon">${svc.icon}</div>
+        <div class="svc-body">
+          <div class="svc-name">
+            ${svc.name}
+            <span class="svc-tag">${svc.category}</span>
+            ${svc.usedInProject ? '<span class="svc-used">✓ Used Here</span>' : ''}
+          </div>
+          <div class="svc-tagline">${svc.tagline}</div>
+          <div class="svc-links">
+            <a class="svc-link" href="${svc.docUrl}" target="_blank" rel="noopener">📖 Docs</a>
+            <a class="svc-link" href="${svc.quickstartUrl}" target="_blank" rel="noopener">⚡ Quickstart</a>
+            <button class="svc-link ask-ai" data-id="${svc.id}" data-name="${svc.name}">🤖 Ask AI</button>
+          </div>
+        </div>`;
+
+      // Ask AI button sends a focused question to the chat
+      card.querySelector('.ask-ai').addEventListener('click', (e) => {
+        const name = e.currentTarget.dataset.name;
+        chatInput.value = `Explain ${name} to me and how it can be used in a learning app.`;
+        chatForm.dispatchEvent(new Event('submit'));
+        // Scroll to chat panel
+        document.getElementById('chat-messages').scrollIntoView({ behavior: 'smooth' });
+      });
+
+      listEl.appendChild(card);
+    });
+
+  } catch (err) {
+    loadingEl.textContent = 'Could not load services (backend offline).';
+  }
+}
+
 // Start App
 init();
+loadGoogleServices();
+

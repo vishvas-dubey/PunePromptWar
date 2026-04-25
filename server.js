@@ -19,6 +19,7 @@ const speech = require('@google-cloud/speech');
 const { Translate } = require('@google-cloud/translate').v2;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const ragService = require('./rag_service');
+const googleServices = require('./google_services');
 
 require('dotenv').config();
 
@@ -35,6 +36,9 @@ app.use(express.json());
 
 // Integrate RAG Router
 app.use('/api/rag', ragService.router);
+
+// Integrate Google Services Router
+app.use('/api/services', googleServices.router);
 
 // Serve static files from root (for hackathon structure)
 app.use(express.static(__dirname));
