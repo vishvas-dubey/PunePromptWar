@@ -11,19 +11,18 @@ const chatInput = document.getElementById('chat-input');
 const modeSwitch = document.getElementById('mode-switch');
 const modeLabel = document.getElementById('mode-label');
 const progressBar = document.getElementById('main-progress');
+const apiKeyBtn = document.getElementById('api-key-btn');
 
-// --- Pre-defined Scenario (Simulating Backend LLM & Vector DB) ---
-const scenario = [
-  {
-    sender: "ai",
-    content: "Welcome back! Today we are mastering **Python OOP**. Object-Oriented Programming is like building with Lego blocks. You create a blueprint (Class) and make specific objects from it.<br><br>Ready for an example?",
-    delay: 500
-  }
-];
-
+// --- API & Chat State ---
+let apiKey = localStorage.getItem('gemini_api_key') || '';
+let chatHistory = [];
 // --- Initialization ---
 function init() {
-  renderMessages();
+  if (!apiKey) {
+    renderMessage({ sender: "ai", content: "Hello! To make me truly dynamic and learn ANY topic, please click the 🔑 **Set API Key** button above and enter your Gemini API Key." });
+  } else {
+    renderMessage({ sender: "ai", content: "Hello! I am your AI Tutor connected to Gemini. What concept would you like to learn today? (e.g., Python, Gen AI, Calculus)" });
+  }
 }
 
 function scrollToBottom() {
@@ -34,7 +33,10 @@ function renderMessage(msg) {
   const wrapper = document.createElement('div');
   wrapper.className = `msg-wrapper ${msg.sender}`;
   
-  let html = `<div class="msg-bubble">${msg.content}</div>`;
+  // Basic markdown to HTML (bold and line breaks)
+  let formattedContent = msg.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+  
+  let html = `<div class="msg-bubble">${formattedContent}</div>`;
   if (msg.gamification) {
     html += `<span class="feedback-badge">${msg.gamification}</span>`;
   }
@@ -44,60 +46,75 @@ function renderMessage(msg) {
   scrollToBottom();
 }
 
-function renderMessages() {
-  chatMessages.innerHTML = '';
-  scenario.forEach(renderMessage);
-}
-
-// --- Interaction Logic (Simulated AI Engine) ---
-chatForm.addEventListener('submit', (e) => {
+// --- Interaction Logic (Dynamic Gemini AI) ---
+chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const text = chatInput.value.trim();
   if (!text) return;
 
-  // 1. Add User Message
   renderMessage({ sender: "user", content: text });
+  chatHistory.push({ role: "user", parts: [{ text }] });
   chatInput.value = '';
 
-  // 2. Simulate AI Analysis & Response
-  setTimeout(() => {
-    analyzeAndRespond(text);
-  }, 800);
-});
-
-function analyzeAndRespond(input) {
-  const lowerInput = input.toLowerCase();
-  let aiResponse = "";
-  let gamification = null;
-
-  if (mode === "challenge") {
-    // Challenge Mode Logic
-    if (lowerInput.includes("car") || lowerInput.includes("ferrari")) {
-      if (lowerInput.includes("new")) {
-        aiResponse = "❌ Close! But `new` is JavaScript/Java syntax. In Python, we just call the class directly without `new`. Try again.";
-      } else {
-        aiResponse = "✅ Perfect! You correctly instantiated a Python object.<br><code>ferrari = Car('red')</code>";
-        gamification = "🎯 +10XP (Challenge Passed)";
-        updateProgress(10);
-      }
-    } else {
-      aiResponse = "Think about how we instantiate classes in Python. Write the code to create a red Ferrari using a `Car` class.";
-    }
-  } else {
-    // Explain Mode Logic
-    if (lowerInput.includes("yes") || lowerInput.includes("sure")) {
-      aiResponse = "Great! Here is a simple Python Class:<br><pre><code>class Car:\n  def __init__(self, color):\n    self.color = color</code></pre><br>Now, how would you create a red Ferrari using this class?";
-      modeSwitch.checked = true;
-      toggleMode(); // Automatically switch to challenge to test them
-    } else if (lowerInput.includes("don't get it") || lowerInput.includes("confused")) {
-      aiResponse = "No worries! Let's simplify. Imagine a `Class` is a cookie cutter, and the `Object` is the actual cookie you bake. Make sense?";
-      gamification = "💡 Switched to ELI5 mode";
-    } else {
-      aiResponse = "Interesting! Let's keep exploring Python classes. Try to define what an `__init__` function does.";
-    }
+  if (!apiKey) {
+    renderMessage({ sender: "ai", content: "Please set your Gemini API key first using the button above!" });
+    return;
   }
 
-  renderMessage({ sender: "ai", content: aiResponse, gamification });
+  // Show typing indicator
+  const typingMsgId = 'typing-' + Date.now();
+  const wrapper = document.createElement('div');
+  wrapper.className = `msg-wrapper ai`;
+  wrapper.id = typingMsgId;
+  wrapper.innerHTML = `<div class="msg-bubble"><em>Thinking...</em></div>`;
+  chatMessages.appendChild(wrapper);
+  scrollToBottom();
+
+  try {
+    const aiResponse = await callGeminiAPI(text);
+    document.getElementById(typingMsgId).remove();
+    
+    chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+    
+    // Simple gamification mock
+    let gamification = null;
+    if (mode === 'challenge' && (aiResponse.toLowerCase().includes('correct') || aiResponse.toLowerCase().includes('excellent'))) {
+      gamification = "🎯 +10XP (Challenge Passed)";
+      updateProgress(10);
+    }
+    
+    renderMessage({ sender: "ai", content: aiResponse, gamification });
+  } catch (error) {
+    document.getElementById(typingMsgId).remove();
+    renderMessage({ sender: "ai", content: "Error connecting to AI. Please check your API key." });
+  }
+});
+
+async function callGeminiAPI(userText) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  
+  // Format history for Gemini API
+  const contents = [...chatHistory];
+  
+  const systemPrompt = `You are an Adaptive Learning Companion. The user is in '${mode}' mode. 
+  If mode is 'explain', teach them concepts clearly using analogies. 
+  If mode is 'challenge', ask them questions and DO NOT give the answer directly, evaluate their responses.
+  Keep responses concise (max 3 sentences). Use markdown formatting.`;
+
+  // Inject system prompt into the first message
+  if (contents.length > 0) {
+     contents[contents.length - 1].parts[0].text = systemPrompt + "\n\nUser: " + userText;
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents })
+  });
+
+  if (!response.ok) throw new Error("API Error");
+  const data = await response.json();
+  return data.candidates[0].content.parts[0].text;
 }
 
 function updateProgress(amount) {
@@ -121,6 +138,18 @@ function toggleMode() {
 }
 
 modeSwitch.addEventListener('change', toggleMode);
+
+// API Key Logic
+apiKeyBtn.addEventListener('click', () => {
+  const key = prompt("Enter your Google Gemini API Key (get one for free at Google AI Studio):", apiKey);
+  if (key !== null) {
+    apiKey = key.trim();
+    localStorage.setItem('gemini_api_key', apiKey);
+    chatHistory = []; // Reset history
+    chatMessages.innerHTML = ''; // Clear chat
+    init(); // Restart
+  }
+});
 
 // Event listener for "I don't get it" helper button
 document.querySelector('.context-actions button:nth-child(2)').addEventListener('click', () => {
