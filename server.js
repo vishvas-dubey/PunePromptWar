@@ -92,7 +92,7 @@ app.post('/api/chat', async (req, res) => {
     
     if (vectorStore.length > 0) {
       try {
-        const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const embeddingModel = genAI.getGenerativeModel({ model: "embedding-001" });
         const userEmbeddingResult = await embeddingModel.embedContent(message);
         const userVector = userEmbeddingResult.embedding.values;
 

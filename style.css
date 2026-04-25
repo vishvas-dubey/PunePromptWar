@@ -1,11 +1,12 @@
 :root {
   --bg-color: #0b1120;
-  --panel-bg: rgba(30, 41, 59, 0.7);
-  --panel-border: rgba(255, 255, 255, 0.08);
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --accent: #10b981;
-  --warning: #f59e0b;
+  --panel-bg: rgba(15, 23, 42, 0.75);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --primary: #4285F4; /* Google Blue */
+  --secondary: #34A853; /* Google Green */
+  --accent: #EA4335; /* Google Red */
+  --warning: #FBBC05; /* Google Yellow */
+  --purple: #A142F4; /* Google Purple */
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --font-family: 'Inter', system-ui, sans-serif;
@@ -16,13 +17,15 @@
 body {
   font-family: var(--font-family);
   background-color: var(--bg-color);
+  background-image: linear-gradient(rgba(11, 17, 32, 0.8), rgba(11, 17, 32, 0.8)), url('google_banner.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   color: var(--text-main);
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 40%),
-                    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 40%);
 }
 
 /* Navbar */

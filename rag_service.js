@@ -71,7 +71,7 @@ router.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
     if (!apiKey) return res.status(401).json({ error: "No API key configured." });
     
     const genAI = new GoogleGenerativeAI(apiKey);
-    const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    const embeddingModel = genAI.getGenerativeModel({ model: "embedding-001" });
 
     // 3. Chunk text and generate Embeddings (RAG Process)
     const chunks = chunkText(fullText);
